@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Biblioteca Digital</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+
+  <link rel="stylesheet" href="./biblioteca.css">
+
+</head>
+
+<body>
+  <div class="container navbar-custom">
+    <div class="brand">
+      <div class="brand-pill" role="banner">
+        <div class="brand-accent" aria-hidden="true"></div>
+        <div class="logo" aria-hidden="true"><i class="fa-solid fa-book-open"></i></div>
+        <div class="site-title" aria-hidden="false">
+          <div class="site-name">Biblioteca Digital</div>
+          <div class="site-sub">POO en JavaScript — gestión de materiales</div>
+        </div>
+      </div>
+    </div>
+    <div class="controls">
+
+      <div class="buttons">
+        <button id="btnExportTop" class="icon-button" title="Exportar" aria-label="Exportar"><i
+            class="fa-solid fa-file-arrow-up" aria-hidden="true"></i></button>
+        <label class="icon-button" title="Importar" aria-label="Importar"
+          style="display:inline-flex;align-items:center;gap:8px">
+          <i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i>
+          <input id="fileImportTop" type="file" accept="application/json" style="display:none">
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <main class="section">
+    <div class="container">
+      <div class="columns is-variable is-6">
+        <div class="column is-one-third">
+          <div class="box">
+            <h3 class="title is-5"><i class="fa-solid fa-circle-plus" style="color:var(--accent)"></i>&nbsp; Añadir /
+              editar material</h3>
+            <div class="field">
+              <label class="label">Tipo</label>
+              <div class="control">
+                <div class="select is-fullwidth"><select id="uiMatTipo">
+                    <option value="Libro">Libro</option>
+                    <option value="Revista">Revista</option>
+                    <option value="VideoEducativo">Video educativo</option>
+                  </select></div>
+              </div>
+            </div>
+
+            <div class="field"><label class="label">Título</label>
+              <div class="control"><input id="uiMatTitulo" class="input" type="text" placeholder="Título del material">
+              </div>
+            </div>
+
+            <div class="field"><label class="label">Autor</label>
+              <div class="control"><input id="uiMatAutor" class="input" type="text" placeholder="Autor o autores">
+              </div>
+            </div>
+
+            <div class="field"><label class="label">Año</label>
+              <div class="control"><input id="uiMatAnio" class="input" type="number" placeholder="Año de publicación">
+              </div>
+            </div>
+
+            <div id="uiMatExtras"></div>
+
+            <div class="field is-grouped mt-4">
+              <div class="control"><button id="uiAddMat" class="button is-primary">Agregar</button></div>
+              <div class="control"><button id="btnSaveMat" class="button is-info" style="display:none">Guardar</button>
+              </div>
+              <div class="control"><button id="btnDeleteMat" class="button is-danger"
+                  style="display:none">Eliminar</button></div>
+              <div class="control"><button id="uiSeed" class="button is-light">Cargar ejemplo</button></div>
+            </div>
+
+            <input id="matId" type="hidden">
+            <p id="uiMsgMat" class="small-muted mt-3"></p>
+          </div>
+
+          <div class="box">
+            <h3 class="title is-5"><i class="fa-solid fa-user-plus" style="color:var(--accent)"></i>&nbsp; Registrar
+              usuario</h3>
+            <div class="field"><label class="label">Nombre</label>
+              <div class="control"><input id="uiUsrNombre" class="input" type="text" placeholder="Nombre completo">
+              </div>
+            </div>
+            <div class="field"><label class="label">ID usuario</label>
+              <div class="control"><input id="uiUsrId" class="input" type="text" placeholder="identificador único">
+              </div>
+            </div>
+            <div class="field">
+              <div class="control"><button id="uiAddUsr" class="button is-primary">Registrar</button></div>
+            </div>
+            <p id="uiMsgUsr" class="small-muted mt-2"></p>
+            <div id="usuariosList" class="mt-3"></div>
+          </div>
+
+        </div>
+
+        <div class="column">
+          <div class="box">
+            <div class="level">
+              <div class="level-left">
+                <h3 class="title is-5"><i class="fa-solid fa-book" style="color:var(--accent)"></i>&nbsp; Materiales
+                </h3>
+              </div>
+              <div class="level-right">
+                <div class="level-item">
+                  <div class="control has-icons-left">
+                    <input id="uiBuscar" class="input" placeholder="Buscar por título o autor">
+                    <span class="icon is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
+                  </div>
+                </div>
+                <div class="level-item"><button id="uiBuscarBtn" class="button is-info">Buscar</button></div>
+              </div>
+            </div>
+
+            <div id="uiMateriales" class="card-list mt-4"></div>
+          </div>
+
+          <div class="box mt-4">
+            <h3 class="title is-5"><i class="fa-solid fa-hand-holding" style="color:var(--accent)"></i>&nbsp; Préstamo
+              /
+              Devolución</h3>
+            <div class="notification is-white">
+              <div class="columns is-mobile">
+                <div class="column is-half">
+                  <div class="field"><label class="label">ID usuario</label>
+                    <div class="control"><input id="uiOpUsr" class="input" type="text" placeholder="idUsuario"></div>
+                  </div>
+                </div>
+                <div class="column is-half">
+                  <div class="field"><label class="label">Título</label>
+                    <div class="control"><input id="uiOpTitulo" class="input" type="text" placeholder="Título exacto">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field is-grouped">
+                <div class="control"><button id="uiPrestar" class="button is-success">Prestar</button></div>
+                <div class="control"><button id="uiDevolver" class="button is-warning">Devolver</button></div>
+                <div class="control" style="margin-left:auto">
+                  <p id="uiOpMsg" class="muted"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="box mt-4">
+            <h3 class="title is-5"><i class="fa-solid fa-users" style="color:var(--accent)"></i>&nbsp; Usuarios</h3>
+            <div id="uiUsuarios"></div>
+
+            <div style="margin-top:12px">
+              <h4 class="title is-6">Historial usuario</h4>
+              <div class="field has-addons">
+                <div class="control is-expanded"><input id="histUsr" class="input" placeholder="idUsuario"></div>
+                <div class="control"><button id="btnHist" class="button is-light">Ver historial</button></div>
+              </div>
+              <div id="histList" class="mt-2"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="page-footer">
+    <div class="container has-text-centered">
+      <small class="muted">Proyecto: Sistema de Gestión de Biblioteca Digital — Ejemplo educativo</small>
+    </div>
+  </footer>
+</body>
+
+</html>
