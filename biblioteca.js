@@ -161,4 +161,71 @@ document.addEventListener('DOMContentLoaded', () => {
   document.body.appendChild(fab);
 })();
 
+(function () {
+  const ejemploMateriales = [
+    new Libro('El Principito', 'Antoine de Saint-Exupéry', 1943, 96),
+    new Libro('Cien Años de Soledad', 'Gabriel García Márquez', 1967, 417),
+    new Revista('National Geographic - Viajes', 'Varios', 2021, 'Ed. 34'),
+    new VideoEducativo('Introducción a JavaScript', 'MDN', 2021, 45, 'Programación'),
+    new VideoEducativo('Física para todos', 'CanalEducativo', 2019, 60, 'Ciencia')
+  ];
+
+  const ejemploUsuarios = [
+    new Usuario('María', 101),
+    new Usuario('Carlos', 102),
+    new Usuario('Lucía', 103)
+  ];
+
+  const bibliotecaDemo = new Biblioteca();
+
+  function renderMateriales() {
+    const cont = document.getElementById('uiMateriales');
+    if (!cont) return;
+    const html = bibliotecaDemo.listarMateriales().map(m => {
+      const tipo = m instanceof Libro ? 'Libro' : (m instanceof Revista ? 'Revista' : 'Video educativo');
+      let extra = '';
+      if (m instanceof Libro) extra = `Páginas: ${m.numeroPaginas}`;
+      if (m instanceof Revista) extra = `Edición: ${m.numeroEdicion}`;
+      if (m instanceof VideoEducativo) extra = `Duración: ${m.duracion} min — Tema: ${m.tema}`;
+      const disponible = m.disponible ? 'Disponible' : 'Prestado';
+      return `
+        <div class="card mb-3">
+          <div class="card-content">
+            <p class="title is-6">${m.titulo}</p>
+            <p class="subtitle is-7">${m.autor} — ${m.anioPublicacion} <span class="muted">(${tipo})</span></p>
+            <p class="small-muted">${extra} — <strong>${disponible}</strong></p>
+          </div>
+        </div>`;
+    }).join('');
+    cont.innerHTML = html || '<p class="muted">No hay materiales.</p>';
+  }
+
+  function renderUsuarios() {
+    const left = document.getElementById('usuariosList');
+    const right = document.getElementById('uiUsuarios');
+    const html = bibliotecaDemo.usuarios.map(u => {
+      const prestamos = u.materialPrestado.map(p => p.titulo).join(', ') || '—';
+      return `
+        <div class="box">
+          <strong>${u.nombre}</strong> <span class="muted">(ID ${u.idUsuario})</span>
+          <div class="small-muted">Prestados: ${prestamos}</div>
+        </div>`;
+    }).join('');
+    if (left) left.innerHTML = html || '<p class="muted">No hay usuarios registrados.</p>';
+    if (right) right.innerHTML = html || '<p class="muted">No hay usuarios registrados.</p>';
+  }
+
+  // Cargar datos y renderizar al cargar la página 
+  document.addEventListener('DOMContentLoaded', () => {
+    ejemploMateriales.forEach(m => bibliotecaDemo.agregarMaterial(m));
+    ejemploUsuarios.forEach(u => bibliotecaDemo.registrarUsuario(u));
+    // Préstamos precargados para mostrar estado 
+    bibliotecaDemo.prestar('El Principito', 101);
+    bibliotecaDemo.prestar('Introducción a JavaScript', 102);
+    renderMateriales();
+    renderUsuarios();
+  });
+
+})();
+
 
