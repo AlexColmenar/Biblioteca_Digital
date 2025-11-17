@@ -126,26 +126,6 @@ class Biblioteca {
   }
 }
 
-
-
-document.addEventListener('DOMContentLoaded', () => {
-  const topImport = document.getElementById('fileImportTop');
-  if (topImport) topImport.addEventListener('change', (e) => {
-    const f = e.target.files?.[0];
-    const target = document.getElementById('fileImport');
-    if (f && target) {
-      target.files = e.target.files;
-      target.dispatchEvent(new Event('change'));
-    }
-  });
-
-  const topExport = document.getElementById('btnExportTop');
-  if (topExport) topExport.addEventListener('click', () => {
-    const btn = document.getElementById('btnExport');
-    btn && btn.click();
-  });
-});
-
 (function () {
   const fab = document.createElement('button');
   fab.className = 'fab-add';
