@@ -91,7 +91,9 @@ class Biblioteca {
   }
 
   buscarMaterial(titulo) {
-    return this.materiales.find(m => m.titulo === titulo) || null;
+    if (!titulo && titulo !== 0) return null;
+    const t = String(titulo).trim().toLowerCase();
+    return this.materiales.find(m => String(m.titulo || '').trim().toLowerCase() === t) || null;
   }
 
   listarMateriales() {
@@ -99,14 +101,17 @@ class Biblioteca {
   }
 
   registrarUsuario(usuario) {
-    if (!usuario || !usuario.idUsuario) return { success: false, message: 'Usuario inválido' };
+    if (!usuario || (usuario.idUsuario === undefined || usuario.idUsuario === null)) return { success: false, message: 'Usuario inválido' };
+    usuario.idUsuario = String(usuario.idUsuario).trim();
     if (this.buscarUsuario(usuario.idUsuario)) return { success: false, message: 'Usuario ya registrado' };
     this.usuarios.push(usuario);
     return { success: true };
   }
 
   buscarUsuario(idUsuario) {
-    return this.usuarios.find(u => u.idUsuario === idUsuario) || null;
+    if (idUsuario === undefined || idUsuario === null) return null;
+    const id = String(idUsuario).trim();
+    return this.usuarios.find(u => String(u.idUsuario).trim() === id) || null;
   }
 
   prestar(titulo, idUsuario) {
@@ -161,7 +166,8 @@ class Biblioteca {
   function renderMateriales() {
     const cont = document.getElementById('uiMateriales');
     if (!cont) return;
-    const html = bibliotecaDemo.listarMateriales().map(m => {
+    const list = arguments[0] || bibliotecaDemo.listarMateriales();
+    const html = list.map(m => {
       const tipo = m instanceof Libro ? 'Libro' : (m instanceof Revista ? 'Revista' : 'Video educativo');
       let extra = '';
       if (m instanceof Libro) extra = `Páginas: ${m.numeroPaginas}`;
@@ -204,6 +210,94 @@ class Biblioteca {
     bibliotecaDemo.prestar('Introducción a JavaScript', 102);
     renderMateriales();
     renderUsuarios();
+
+    // Registrar usuario
+    const btnAddUsr = document.getElementById('uiAddUsr');
+    if (btnAddUsr) btnAddUsr.addEventListener('click', () => {
+      const nombre = document.getElementById('uiUsrNombre')?.value || '';
+      const id = document.getElementById('uiUsrId')?.value || '';
+      const res = bibliotecaDemo.registrarUsuario(new Usuario(nombre, id));
+      const uiMsgUsr = document.getElementById('uiMsgUsr');
+      if (!res.success) { if (uiMsgUsr) uiMsgUsr.textContent = res.message; return; }
+      if (uiMsgUsr) uiMsgUsr.textContent = 'Usuario registrado';
+      renderUsuarios();
+    });
+
+    // Agregar material
+    const btnAddMat = document.getElementById('uiAddMat');
+    if (btnAddMat) btnAddMat.addEventListener('click', () => {
+      const tipo = document.getElementById('uiMatTipo')?.value || 'Libro';
+      const titulo = document.getElementById('uiMatTitulo')?.value || '';
+      const autor = document.getElementById('uiMatAutor')?.value || '';
+      const anio = document.getElementById('uiMatAnio')?.value || '';
+      let mat;
+      if (tipo === 'Libro') {
+        const paginas = document.getElementById('uiMatPaginas')?.value || 0;
+        mat = new Libro(titulo, autor, anio, Number(paginas));
+      } else if (tipo === 'Revista') {
+        const ed = document.getElementById('uiMatEdicion')?.value || '';
+        mat = new Revista(titulo, autor, anio, ed);
+      } else {
+        const dur = document.getElementById('uiMatDuracion')?.value || 0;
+        const tema = document.getElementById('uiMatTema')?.value || '';
+        mat = new VideoEducativo(titulo, autor, anio, Number(dur), tema);
+      }
+      const res = bibliotecaDemo.agregarMaterial(mat);
+      const uiMsgMat = document.getElementById('uiMsgMat');
+      if (!res.success) { if (uiMsgMat) uiMsgMat.textContent = res.message; return; }
+      if (uiMsgMat) uiMsgMat.textContent = 'Material agregado';
+      renderMateriales();
+    });
+
+    // Prestar / Devolver
+    const btnPrestar = document.getElementById('uiPrestar');
+    const btnDevolver = document.getElementById('uiDevolver');
+    if (btnPrestar) btnPrestar.addEventListener('click', () => {
+      const id = document.getElementById('uiOpUsr')?.value || '';
+      const titulo = document.getElementById('uiOpTitulo')?.value || '';
+      const res = bibliotecaDemo.prestar(titulo, id);
+      document.getElementById('uiOpMsg').textContent = res.success ? 'Préstamo ok' : res.message;
+      renderMateriales(); renderUsuarios();
+    });
+    if (btnDevolver) btnDevolver.addEventListener('click', () => {
+      const id = document.getElementById('uiOpUsr')?.value || '';
+      const titulo = document.getElementById('uiOpTitulo')?.value || '';
+      const res = bibliotecaDemo.devolver(titulo, id);
+      document.getElementById('uiOpMsg').textContent = res.success ? 'Devolución ok' : res.message;
+      renderMateriales(); renderUsuarios();
+    });
+
+    // Buscar
+    const btnBuscar = document.getElementById('uiBuscarBtn');
+    if (btnBuscar) btnBuscar.addEventListener('click', () => {
+      const q = (document.getElementById('uiBuscar')?.value || '').trim().toLowerCase();
+      if (!q) return renderMateriales();
+      const results = bibliotecaDemo.listarMateriales().filter(m => {
+        return String(m.titulo || '').toLowerCase().includes(q) || String(m.autor || '').toLowerCase().includes(q);
+      });
+      renderMateriales(results);
+    });
+
+    // Historial
+    const btnHist = document.getElementById('btnHist');
+    if (btnHist) btnHist.addEventListener('click', () => {
+      const id = document.getElementById('histUsr')?.value || '';
+      const u = bibliotecaDemo.buscarUsuario(id);
+      const list = document.getElementById('histList');
+      if (!u) return list.innerHTML = '<p class="muted">Usuario no encontrado</p>';
+      const html = u.mostrarHistorial().map(l => `<div>${l}</div>`).join('') || '<div class="muted">Sin historial</div>';
+      list.innerHTML = html;
+    });
+
+    // Cargar ejemplo 
+    const seedBtn = document.getElementById('uiSeed');
+    if (seedBtn) seedBtn.addEventListener('click', () => {
+      ejemploMateriales.forEach(m => bibliotecaDemo.agregarMaterial(m));
+      ejemploUsuarios.forEach(u => {
+        if (!bibliotecaDemo.buscarUsuario(u.idUsuario)) bibliotecaDemo.registrarUsuario(new Usuario(u.nombre, u.idUsuario));
+      });
+      renderMateriales(); renderUsuarios();
+    });
   });
 
 })();
